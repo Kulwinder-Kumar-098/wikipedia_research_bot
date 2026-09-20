@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WikiField Research Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="grain"></div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="WikiField home">
+        <span class="brand-mark">W</span>
+        <span>WikiField <small>RESEARCH DESK</small></span>
+      </a>
+      <div class="status-pill"><span class="status-dot"></span><span id="statusText">Checking database</span></div>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow">YOUR POCKET RESEARCH LIBRARY</div>
+      <h1>Find the signal<br><em>inside the noise.</em></h1>
+      <p class="intro-copy">Search Wikipedia, turn a promising page into a clean research note, and keep the useful pieces close at hand.</p>
+    </section>
+
+    <section class="workspace" aria-label="Research workspace">
+      <div class="search-panel panel">
+        <div class="panel-heading">
+          <div>
+            <span class="step">01</span>
+            <h2>Search the archive</h2>
+          </div>
+          <span class="mono-label">WIKIPEDIA / LIVE</span>
+        </div>
+        <form id="searchForm" class="search-form">
+          <label class="sr-only" for="searchInput">Search Wikipedia</label>
+          <input id="searchInput" name="q" type="search" placeholder="Try &quot;Ada Lovelace&quot; or &quot;black holes&quot;" autocomplete="off" required>
+          <button type="submit" class="button button-primary">Search <span aria-hidden="true">-&gt;</span></button>
+        </form>
+        <div id="searchResults" class="results empty-state">Your search results will land here.</div>
+      </div>
+
+      <aside class="research-panel panel">
+        <div class="panel-heading">
+          <div>
+            <span class="step">02</span>
+            <h2>Save a research note</h2>
+          </div>
+          <span class="mono-label">NEON / SYNCED</span>
+        </div>
+        <form id="researchForm" class="research-form">
+          <label for="researchTitle">Article title</label>
+          <input id="researchTitle" type="text" placeholder="Paste an exact title" required>
+          <label class="check-row"><input id="fullText" type="checkbox"><span>Fetch the full article text</span></label>
+          <button type="submit" class="button button-secondary">Research and save <span aria-hidden="true">+</span></button>
+        </form>
+        <div id="researchMessage" class="message" role="status"></div>
+      </aside>
+    </section>
+
+    <section class="library-section">
+      <div class="section-heading">
+        <div>
+          <span class="step">03</span>
+          <h2>Your saved library</h2>
+        </div>
+        <button id="refreshButton" class="button button-quiet" type="button">Refresh list</button>
+      </div>
+      <div id="recentArticles" class="library-grid empty-state">No saved articles yet. Research a page to begin.</div>
+    </section>
+
+    <footer class="footer"><span>WIKIFIELD / FIELD NOTES FOR CURIOUS MINDS</span><span id="articleCount">0 SAVED</span></footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

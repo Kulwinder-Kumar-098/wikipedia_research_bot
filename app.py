@@ -1,12 +1,17 @@
 """HTTP API for deploying the Wikipedia research bot."""
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 
 from src.exceptions import WikiBotError
 from src.research_bot import ResearchBot
 
 app = Flask(__name__)
 bot = ResearchBot()
+
+
+@app.get("/")
+def dashboard():
+    return render_template("index.html")
 
 
 @app.get("/health")

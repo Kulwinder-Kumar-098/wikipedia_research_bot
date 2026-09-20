@@ -162,9 +162,13 @@ See `examples/usage_example.py` for a complete runnable example.
 
 ### Deploy as a web API on Render
 
-This project includes a Flask API and a `render.yaml` blueprint. In Render,
-create a new Blueprint from this repository. Render will install the
-dependencies and start the service with Gunicorn.
+This project includes a Flask dashboard, Flask API, Neon PostgreSQL support,
+and a `render.yaml` blueprint. In Render, create a new Blueprint from this
+repository. Render will install the dependencies and start the service with
+Gunicorn.
+
+Open the service URL to use the dashboard. It lets you search Wikipedia,
+research and save an article, and browse recently saved articles.
 
 Available endpoints:
 
@@ -175,9 +179,9 @@ POST /research   JSON: {"title": "Alan Turing", "full_text": false}
 GET  /articles/recent?limit=10
 ```
 
-The default SQLite database is stored on the service filesystem. Attach a
-Render persistent disk and set `WIKIBOT_DATA_DIR=/var/data` for data that must
-survive redeploys, or replace the SQLite layer with a hosted database.
+Set `DATABASE_URL` in Render to the Neon PostgreSQL connection string. When
+that variable is present, saved articles and search logs are stored in Neon.
+Without it, local development falls back to SQLite at `data/research.db`.
 
 ---
 

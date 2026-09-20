@@ -8,6 +8,10 @@ which keeps the project friendly to Docker / CI deployment.
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # --- Wikipedia API -----------------------------------------------------
 WIKI_LANGUAGE = os.getenv("WIKI_LANGUAGE", "en")
 WIKI_API_BASE = f"https://{WIKI_LANGUAGE}.wikipedia.org/w/api.php"
@@ -34,6 +38,7 @@ DATA_DIR = os.getenv(
 DATABASE_PATH = os.getenv(
     "WIKIBOT_DB_PATH", os.path.join(DATA_DIR, "research.db")
 )
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # --- Logging -----------------------------------------------------------
 LOG_LEVEL = os.getenv("WIKIBOT_LOG_LEVEL", "INFO")

@@ -33,3 +33,5 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+.neon
+node_modules/
