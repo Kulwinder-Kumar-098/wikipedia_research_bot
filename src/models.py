@@ -27,6 +27,7 @@ class Article:
     page_id: int
     summary: str
     url: str
+    content: str = ""
     categories: List[str] = field(default_factory=list)
     word_count: int = 0
     fetched_at: str = field(
@@ -39,6 +40,7 @@ class Article:
             "title": self.title,
             "page_id": self.page_id,
             "summary": self.summary,
+            "content": self.content,
             "url": self.url,
             "categories": self.categories,
             "word_count": self.word_count,

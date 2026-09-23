@@ -40,3 +40,11 @@ class RateLimitError(APIRequestError):
 
 class DatabaseError(WikiBotError):
     """Raised when a SQL storage or retrieval operation fails."""
+
+
+class LLMError(WikiBotError):
+    """Raised when the configured language model cannot answer a question."""
+
+
+class EmbeddingError(WikiBotError):
+    """Raised when vector embedding generation fails or is not configured."""

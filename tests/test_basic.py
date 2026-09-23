@@ -16,7 +16,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src import text_processor
 from src.database import ResearchDatabase
 from src.exceptions import DatabaseError, InvalidInputError
+from src.llm_client import normalize_answer
 from src.models import Article
+from src.research_bot import ResearchBot
 
 
 class TestTextProcessor(unittest.TestCase):
@@ -53,6 +55,13 @@ class TestTextProcessor(unittest.TestCase):
         self.assertIn("quantum", keywords)
         self.assertNotIn("the", keywords)
         self.assertNotIn("for", keywords)
+
+    def test_normalize_llm_answer(self):
+        answer = "Lana\u202fDel\u202fRey is a singer\u2011songwriter【Lana Del Ray (album)】."
+        self.assertEqual(
+            normalize_answer(answer),
+            "Lana Del Rey is a singer-songwriter[Lana Del Ray (album)].",
+        )
 
 
 class TestDatabase(unittest.TestCase):
@@ -102,6 +111,53 @@ class TestDatabase(unittest.TestCase):
         self.db.save_article(self._sample_article(page_id=99, title="To Delete"))
         self.assertTrue(self.db.delete_article(99))
         self.assertIsNone(self.db.get_by_title("To Delete"))
+
+    def test_retrieve_includes_article_content(self):
+        article = self._sample_article(page_id=7, title="Quantum Computing")
+        article.content = "Quantum computers use qubits to process information."
+        self.db.save_article(article)
+        results = self.db.retrieve("qubits")
+        self.assertEqual([result.title for result in results], ["Quantum Computing"])
+
+
+class FakeLLM:
+    def __init__(self):
+        self.context = ""
+
+    def answer(self, question, context):
+        self.context = context
+        return "Quantum computers use qubits. [Quantum Computing]"
+
+
+class FakeEmbedding:
+    model = "test-embeddings"
+
+    def embed(self, text):
+        return [1.0, 0.0] if "quantum" in text.lower() or "qubits" in text.lower() else [0.0, 1.0]
+
+
+class TestRAG(unittest.TestCase):
+    def test_ask_retrieves_context_and_returns_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            database = ResearchDatabase(db_path=os.path.join(tmp_dir, "rag.db"))
+            article = Article(
+                title="Quantum Computing",
+                page_id=8,
+                summary="Quantum computing uses qubits.",
+                content="Quantum computers use qubits to process information.",
+                url="https://example.test/quantum",
+            )
+            database.save_article(article)
+            database.save_embedding(1, [1.0, 0.0], "test-embeddings")
+            llm = FakeLLM()
+            result = ResearchBot(
+                database=database,
+                llm_client=llm,
+                embedding_client=FakeEmbedding(),
+            ).ask("How do qubits process information?")
+            self.assertIn("qubits", llm.context)
+            self.assertIn("Quantum computers", result["answer"])
+            self.assertEqual(result["sources"][0]["title"], "Quantum Computing")
 
 
 if __name__ == "__main__":

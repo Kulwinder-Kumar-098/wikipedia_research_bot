@@ -10,6 +10,9 @@ const refreshButton = document.querySelector('#refreshButton');
 const articleCount = document.querySelector('#articleCount');
 const statusText = document.querySelector('#statusText');
 const statusDot = document.querySelector('.status-dot');
+const askForm = document.querySelector('#askForm');
+const questionInput = document.querySelector('#questionInput');
+const answerBox = document.querySelector('#answerBox');
 
 function showMessage(element, message, type = '') {
   element.textContent = message;
@@ -108,5 +111,28 @@ researchForm.addEventListener('submit', async (event) => {
 });
 
 refreshButton.addEventListener('click', loadRecent);
+
+askForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const question = questionInput.value.trim();
+  if (!question) return;
+  answerBox.className = 'answer-box empty-state';
+  answerBox.textContent = 'Searching your saved knowledge...';
+  try {
+    const response = await fetch('/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Could not answer the question.');
+    answerBox.className = 'answer-box';
+    answerBox.innerHTML = `<p>${escapeHtml(result.answer)}</p>${result.sources.length
+      ? `<div class="article-meta">Sources: ${result.sources.map((source) => escapeHtml(source.title)).join(' / ')}</div>`
+      : ''}`;
+  } catch (error) {
+    answerBox.textContent = error.message;
+  }
+});
+
 checkHealth();
 loadRecent();

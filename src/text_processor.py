@@ -87,7 +87,9 @@ def process_article(article: Article, full_text: str = None) -> Article:
     """Apply cleaning/summarization to a raw Article before storage."""
     article.summary = clean_text(article.summary)
     if full_text:
+        article.content = clean_text(full_text)
         article.word_count = word_count(full_text)
     else:
+        article.content = article.summary
         article.word_count = word_count(article.summary)
     return article

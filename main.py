@@ -9,6 +9,8 @@ Usage examples:
     python main.py find "machine learning"
     python main.py recent --limit 5
     python main.py stats
+    python main.py ask "What is quantum computing?"
+    python main.py reindex-vectors
     python main.py interactive
 """
 
@@ -83,6 +85,20 @@ def cmd_stats(bot: ResearchBot, args) -> None:
     print(f"Stored articles: {stats['stored_articles']}")
 
 
+def cmd_ask(bot: ResearchBot, args) -> None:
+    result = bot.ask(args.question, limit=args.limit)
+    print(result["answer"])
+    if result["sources"]:
+        print("\nSources:")
+        for source in result["sources"]:
+            print(f"- {source['title']}: {source['url']}")
+
+
+def cmd_reindex_vectors(bot: ResearchBot, args) -> None:
+    count = bot.reindex_vectors()
+    print(f"Created vectors for {count} stored article(s).")
+
+
 def cmd_interactive(bot: ResearchBot, args) -> None:
     print("Intelligent Wikipedia Research Bot -- interactive mode")
     print("Commands: search <q> | research <title> | find <keyword> | recent | stats | quit\n")
@@ -148,6 +164,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_stats = sub.add_parser("stats", help="Show storage statistics")
     p_stats.set_defaults(func=cmd_stats)
+
+    p_ask = sub.add_parser("ask", help="Answer a question from stored research")
+    p_ask.add_argument("question")
+    p_ask.add_argument("--limit", type=int, default=config.RAG_MAX_SOURCES)
+    p_ask.set_defaults(func=cmd_ask)
+
+    p_reindex = sub.add_parser(
+        "reindex-vectors", help="Create embeddings for existing stored articles"
+    )
+    p_reindex.set_defaults(func=cmd_reindex_vectors)
 
     p_interactive = sub.add_parser("interactive", help="Start an interactive session")
     p_interactive.set_defaults(func=cmd_interactive)

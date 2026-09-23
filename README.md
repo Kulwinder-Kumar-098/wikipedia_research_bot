@@ -25,6 +25,9 @@ everything in a local SQL database for fast future search and retrieval.
   logic, plus a search log for query history
 - **Search & retrieve stored data** with real SQL (`LIKE`-based full text
   search across titles/summaries, "recent articles" queries, etc.)
+- **Retrieval-augmented answers**: ask questions against stored research;
+  relevant SQL records are retrieved and passed to an OpenAI-compatible LLM
+  with source citations and an instruction to avoid unsupported claims
 - **Two ways to use it**: a full CLI (`main.py`) and a plain importable
   Python module (`ResearchBot`) for use inside other programs
 
@@ -43,7 +46,7 @@ wikipedia_research_bot/
 │   ├── __init__.py
 │   ├── api_client.py         # All HTTP calls to Wikipedia's APIs
 │   ├── text_processor.py     # Validation, cleaning, summarization
-│   ├── database.py           # SQLite schema, storage, SQL search
+│   ├── database.py           # SQLite / pgvector storage and retrieval
 │   ├── models.py             # Shared dataclasses (Article, SearchResult, ...)
 │   ├── research_bot.py       # High-level orchestrator (the main API)
 │   └── exceptions.py         # Custom exception hierarchy
@@ -132,6 +135,9 @@ python main.py recent --limit 5
 # Show storage stats
 python main.py stats
 
+# Answer from stored research (requires LLM configuration)
+python main.py ask "How does quantum computing use qubits?"
+
 # Interactive REPL mode
 python main.py interactive
 ```
@@ -177,11 +183,59 @@ GET  /health
 GET  /search?q=quantum%20computing&limit=5
 POST /research   JSON: {"title": "Alan Turing", "full_text": false}
 GET  /articles/recent?limit=10
+POST /ask   JSON: {"question": "How does quantum computing use qubits?"}
 ```
 
 Set `DATABASE_URL` in Render to the Neon PostgreSQL connection string. When
-that variable is present, saved articles and search logs are stored in Neon.
+that variable is present, saved articles, vectors, and search logs are stored in Neon.
 Without it, local development falls back to SQLite at `data/research.db`.
+
+### RAG and LLM configuration
+
+The `/ask` endpoint embeds the question, retrieves nearest articles using
+PostgreSQL `pgvector` cosine similarity, builds a bounded context, and sends it
+to an OpenAI-compatible chat completions endpoint. Set:
+
+```bash
+LLM_API_KEY=your-key
+LLM_BASE_URL=https://your-provider.example/v1
+LLM_MODEL=gpt-5-mini
+
+# Free local embeddings. The model downloads once and runs locally.
+EMBEDDING_PROVIDER=local
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_DIMENSIONS=384
+```
+
+Groq is used for answer generation in `LLM_*`. The default embeddings model is
+free and local, so no embedding API key is required. It downloads once on the
+first research or reindex operation. Neon PostgreSQL automatically enables
+`pgvector` and creates the vector index during startup. After upgrading an
+existing database, run:
+
+```bash
+python main.py reindex-vectors
+```
+
+### Redeploy on Render
+
+Commit and push the updated project to the GitHub repository connected to
+Render. Render will install `sentence-transformers` during the build and
+restart the web service automatically. Set these Render environment variables:
+
+```text
+DATABASE_URL       Neon PostgreSQL connection string
+LLM_API_KEY        Groq API key
+LLM_BASE_URL       https://api.groq.com/openai/v1
+LLM_MODEL          openai/gpt-oss-120b
+EMBEDDING_PROVIDER local
+EMBEDDING_MODEL    sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_DIMENSIONS 384
+```
+
+After deployment, call `/health`, then run `python main.py reindex-vectors`
+against the deployed database from a local environment with the same
+`DATABASE_URL` and embedding settings. New articles are embedded automatically.
 
 ---
 
@@ -236,6 +290,9 @@ configurable via `WIKIBOT_DB_PATH`). Schema:
   with indexes on `title` and `fetched_at`
 - **`search_log`** — records every search query and result count, for
   usage history/analytics
+- **`article_embeddings`** — stores article vectors; Neon PostgreSQL uses
+  `pgvector` and cosine nearest-neighbor search, while SQLite stores vectors
+  for offline tests
 
 ---
 

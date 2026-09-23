@@ -50,6 +50,14 @@ def recent_articles():
     return jsonify([article.to_dict() for article in articles])
 
 
+@app.post("/ask")
+def ask():
+    payload = request.get_json(silent=True) or {}
+    question = payload.get("question", "")
+    limit = payload.get("limit", 5)
+    return jsonify(bot.ask(question, limit=max(1, min(int(limit), 10))))
+
+
 @app.errorhandler(WikiBotError)
 def handle_bot_error(error):
     return jsonify({"error": str(error)}), 400

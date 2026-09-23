@@ -40,6 +40,20 @@ DATABASE_PATH = os.getenv(
 )
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# --- RAG / LLM --------------------------------------------------------
+LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("NEON_AI_GATEWAY_TOKEN")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("NEON_AI_GATEWAY_BASE_URL")
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-5-mini")
+RAG_MAX_SOURCES = int(os.getenv("RAG_MAX_SOURCES", "5"))
+RAG_MAX_CONTEXT_CHARS = int(os.getenv("RAG_MAX_CONTEXT_CHARS", "12000"))
+EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "local")
+EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY")
+EMBEDDING_BASE_URL = os.getenv("EMBEDDING_BASE_URL")
+EMBEDDING_MODEL = os.getenv(
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+)
+EMBEDDING_DIMENSIONS = int(os.getenv("EMBEDDING_DIMENSIONS", "384"))
+
 # --- Logging -----------------------------------------------------------
 LOG_LEVEL = os.getenv("WIKIBOT_LOG_LEVEL", "INFO")
 LOG_FILE = os.getenv("WIKIBOT_LOG_FILE", os.path.join(DATA_DIR, "wikibot.log"))

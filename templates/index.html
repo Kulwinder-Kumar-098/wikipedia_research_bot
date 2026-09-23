@@ -72,6 +72,22 @@
       <div id="recentArticles" class="library-grid empty-state">No saved articles yet. Research a page to begin.</div>
     </section>
 
+    <section class="ask-section panel" aria-label="Ask your research library">
+      <div class="panel-heading">
+        <div>
+          <span class="step">04</span>
+          <h2>Ask your research library</h2>
+        </div>
+        <span class="mono-label">RAG / GROUNDED</span>
+      </div>
+      <form id="askForm" class="search-form">
+        <label class="sr-only" for="questionInput">Ask a question about saved research</label>
+        <input id="questionInput" type="text" placeholder="Ask about the articles you saved" required>
+        <button type="submit" class="button button-primary">Ask <span aria-hidden="true">-&gt;</span></button>
+      </form>
+      <div id="answerBox" class="answer-box empty-state">Answers use only the knowledge stored in your library.</div>
+    </section>
+
     <footer class="footer"><span>WIKIFIELD / FIELD NOTES FOR CURIOUS MINDS</span><span id="articleCount">0 SAVED</span></footer>
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
